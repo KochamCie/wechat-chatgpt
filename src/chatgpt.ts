@@ -325,12 +325,12 @@ export class ChatGPTBot {
   ): boolean {
     return (
       talker.self() ||
-      messageType > MessageType.GroupNote ||
+      messageType > MessageType.Post ||
       talker.name() == "微信团队" ||
       // 语音(视频)消息
-      text.includes("收到一条视频/语音聊天消息，请在手机上查看") ||
+      // text.includes("收到一条视频/语音聊天消息，请在手机上查看") ||
       // 红包消息
-      text.includes("收到红包，请在手机上查看") ||
+      // text.includes("收到红包，请在手机上查看") ||
       // 位置消息
       text.includes("/cgi-bin/mmwebwx-bin/webwxgetpubliclinkimg")
     );
@@ -371,5 +371,32 @@ export class ChatGPTBot {
     } else {
       return;
     }
+  }
+
+
+  async onMessageDN(message: Message) {
+    const talker = message.talker();
+    const rawText = message.text();
+    const room = message.room();
+    const messageType = message.type();
+    const privateChat = !room;
+    console.log(`🎯 onMessageDN: [${talker}] [${rawText}] [${room}] [${messageType}]`);
+
+    if (this.isNonsense(talker, messageType, rawText)) {
+      return;
+    }
+
+    // 撤回消息
+    if (messageType == MessageType.Recalled) {
+      console.log(`🎯 onMessageDN.Recalled: [${talker}] [${rawText}] [${room}] [${messageType}]`);
+
+      const text = this.cleanMessage(rawText, privateChat);
+      console.log(`🎯 onMessageDN.sendMessage.talker: [${talker}] [${text}]`);
+      if (privateChat) {
+        return await this.onPrivateMessage(talker, text);
+      } else {
+        return await this.onGroupMessage(talker, text, room);
+      }
+    } 
   }
 }

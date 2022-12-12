@@ -29,7 +29,8 @@ async function main() {
       }
       try {
         console.log(`Message: ${message}`);
-        await chatGPTBot.onMessage(message);
+        // await chatGPTBot.onMessage(message);
+        await chatGPTBot.onMessageDN(message);
       } catch (e) {
         console.error(e);
       }
